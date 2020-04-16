@@ -1,0 +1,371 @@
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+#include "rlutil.h"
+using namespace rlutil;
+
+#include "tipos.h"
+#include "prototipo.h"
+#include "funciones.h"
+
+int main()
+{
+    system ("color f0");
+    while(true)
+    {
+        int op;
+        dibujar_lineas();
+        op=menu(op);
+        switch(op)
+        {
+        case 1:
+        {
+            struct alumnos reg;
+            reg=cargar_alumno();
+            bool cargo=archivar_alumnos(reg);
+            if(cargo==true)
+            {
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"SE CARGO CORRECTAMENTE";
+            }
+            else
+            {
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"NO SE PUDO CARGAR";
+            }
+        }
+        break;
+        case 2:
+        {
+            system("cls");
+            dibujar_lineas();
+            int legajo;
+            gotoxy(2,12);
+            cout<<"INGRESE EL LEGAJO A BUSCAR: ";
+            cin>>legajo;
+            int pos=buscar_alumno(legajo);
+            if(pos>=0)
+            {
+                alumnos reg=listar_elegido(pos);
+                mostrar_alumno(reg);
+            }
+
+            else
+            {
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"NO SE ENCONTRO EL LEGAJO";
+            }
+
+        }
+        break;
+        case 3:
+        {
+            if(leerArchivoAlumnos()==false)
+            {
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"NO SE PUDO LEER EL ARCHIVO"<<endl;
+            }
+
+        }
+        break;
+        case 4:
+        {
+            system("cls");
+            dibujar_lineas();
+            int legajo;
+            alumnos reg;
+            gotoxy(2,12);
+            cout<<"INGRESE EL LEGAJO A BUSCAR: ";
+            cin>>legajo;
+            int pos=buscar_alumno(legajo);
+            if(pos>=0)
+            {
+                reg=listar_elegido(pos);
+                gotoxy(45,4);
+                cout<<"LEGAJO";
+                gotoxy(45,5);
+                cin>>reg.legajo;
+                gotoxy(45,7);
+                cout<<"NOMBRE";
+                cin.ignore();
+                gotoxy(45,8);
+                cin.getline(reg.nombre,10);
+                gotoxy(45,10);
+                cout<<"APELLIDO";
+                gotoxy(45,11);
+                cin.getline(reg.apellido,10);
+                reg.activo=true;
+            }
+            else{
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"NO SE ENCONTRO EL LEGAJO";
+                break;
+                }
+
+                if(modificar_alumno(reg,pos)==false)
+                {
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"NO SE PUDO MODIFICAR EL ARCHIVO"<<endl;
+            }
+            else
+            {
+                system("cls");
+                dibujar_lineas();
+                gotoxy(45,4);
+                cout<<"SE MODIFICO EL ARCHIVO"<<endl;
+            }
+        }
+        break;
+        case 0:
+        {
+            return 0;
+
+        }
+        break;
+        default:
+        {
+            gotoxy(48,4);
+            cout<<"OPCION INCORRECTA";
+        }
+        break;
+        }
+        gotoxy(2,14);
+        system("pause");
+        system("cls");
+
+    }
+    return 0;
+}
+
+****************************************************************************************************************************************
+#ifndef FUNCIONES_H_INCLUDED
+#define FUNCIONES_H_INCLUDED
+
+void dibujar_lineas()
+{
+    gotoxy(53,2);
+    cout<<"ALUMNOS";
+    gotoxy(6,2);
+    cout<<"MENU";
+    gotoxy(2,4);
+    cout<<"1- CARGAR";
+    gotoxy(2,5);
+    cout<<"2- LISTAR ELEGIDO";
+    gotoxy(2,6);
+    cout<<"3- LISTAR TODOS";
+    gotoxy(2,7);
+    cout<<"4- MODIFICAR";
+    gotoxy(2,10);
+    cout<<"0- SALIR";
+
+    for(int i=1; i<17; i++)
+    {
+        gotoxy(43,i);
+        cout<<"|";
+        gotoxy(71,i);
+        cout<<"|";
+        gotoxy(1,i);
+        cout<<"|";
+    }
+
+    for(int i=2; i<70; i++)
+    {
+        gotoxy(i,3);
+        cout<<"-";
+        gotoxy(i,1);
+        cout<<"-";
+        gotoxy(i,16);
+        cout<<"-";
+    }
+    for(int i=2; i<43; i++)
+    {
+        gotoxy(i,13);
+        cout<<"-";
+    }
+}
+
+
+int menu(int op)
+{
+    gotoxy(2,12);
+    cout<<"INGRESE UNA OPCION: ";
+    cin>>op;
+    return op;
+}
+
+struct alumnos cargar_alumno()
+{
+    struct alumnos aux;
+    gotoxy(45,4);
+    cout<<"LEGAJO";
+    gotoxy(45,5);
+    cin>>aux.legajo;
+    gotoxy(45,7);
+    cout<<"NOMBRE";
+    cin.ignore();
+    gotoxy(45,8);
+    cin.getline(aux.nombre,10);
+    gotoxy(45,10);
+    cout<<"APELLIDO";
+    gotoxy(45,11);
+    cin.getline(aux.apellido,10);
+    aux.activo=true;
+    return aux;
+}
+
+bool archivar_alumnos(alumnos aux)
+{
+    FILE *pa;
+    pa=fopen("ALUMNO.DATOS","ab");
+    if(pa==NULL)
+    {
+        return false;
+    }
+    fwrite(&aux,sizeof aux,1,pa);
+    fclose(pa);
+    return true;
+}
+
+bool leerArchivoAlumnos()
+{
+    alumnos x;
+    FILE *pa;
+    pa=fopen("ALUMNO.DATOS","rb");
+    if(pa==NULL)
+    {
+        return false;
+    }
+    while(fread(&x, sizeof x, 1, pa)==1)
+    {
+        system("cls");
+        dibujar_lineas();
+        mostrar_alumno(x);
+
+    }
+    fclose(pa);
+    ///eof: fin de archivo
+    ///feof(pa): devuelve verdadero si está en eof
+    return true;
+
+}
+
+
+void mostrar_alumno (alumnos var)
+{
+    if(var.activo==true)
+    {
+        gotoxy(45,4);
+        cout<<"LEGAJO";
+        gotoxy(45,5);
+        cout<<var.legajo;
+        gotoxy(45,7);
+        cout<<"NOMBRE";
+        gotoxy(45,8);
+        cout<<var.nombre;
+        gotoxy(45,10);
+        cout<<"APELLIDO";
+        gotoxy(45,11);
+        cout<<var.apellido;
+        gotoxy(2,14);
+        system("pause");
+    }
+}
+
+int buscar_alumno(int legajo)
+{
+    int pos=0;
+    struct alumnos reg;
+    FILE *pa;
+    pa=fopen("ALUMNO.DATOS","rb");
+    if(pa==NULL)
+    {
+        return -2;
+    }
+    while (fread(&reg,sizeof reg,1,pa)==1)
+    {
+        if(reg.legajo==legajo)
+        {
+            return pos;
+        }
+        pos++;
+    }
+    fclose(pa);
+    return -1;
+}
+
+struct alumnos listar_elegido(int pos)
+{
+    FILE *pa;
+    struct alumnos reg;
+    pa=fopen("ALUMNO.DATOS","rb");
+    if(pa==NULL)
+    {
+        return reg;
+    }
+    fseek(pa,pos*sizeof reg,0);
+    fread(&reg,sizeof reg,1,pa);
+    fclose(pa);
+    return reg;
+}
+
+bool modificar_alumno(struct alumnos reg,int pos)
+{
+    FILE *pa;
+    pa=fopen("ALUMNO.DATOS","rb+");///el mas es para agregarle al modo lo que le falta.
+    if(pa=NULL)
+    {
+        return false;
+    }
+    fseek(pa,pos*sizeof reg,0);
+    fwrite(&reg,sizeof reg,1,pa);
+    fclose(pa);
+    return true;
+}
+
+#endif // FUNCIONES_H_INCLUDED
+***************************************************************************************************************************************
+#ifndef PROTOTIPO_H_INCLUDED
+#define PROTOTIPO_H_INCLUDED
+
+
+void mostrar_alumno(alumnos);
+
+#endif // PROTOTIPO_H_INCLUDED
+****************************************************************************************************************************************
+#ifndef TIPOS_H_INCLUDED
+#define TIPOS_H_INCLUDED
+
+struct alumnos
+{
+    int legajo;
+    char nombre[10];
+    char apellido[10];
+    bool activo;
+};
+
+#endif // TIPOS_H_INCLUDED
+********************************************************************************************************************************************
+
+
+
+
+
+
+
+
